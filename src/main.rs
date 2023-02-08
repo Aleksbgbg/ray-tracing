@@ -1,4 +1,8 @@
+use crate::types::vec3::Color;
+use crate::utils::print_color;
+
 mod types;
+mod utils;
 
 fn main() {
   const IMAGE_WIDTH: usize = 256;
@@ -19,11 +23,7 @@ fn main() {
       let green = row as f64 / LAST_PIXEL_Y as f64;
       let blue = 0.50;
 
-      let red_scaled = 255f64 * red;
-      let green_scaled = 255f64 * green;
-      let blue_scaled = 255f64 * blue;
-
-      println!("{red_scaled} {green_scaled} {blue_scaled}");
+      print_color::print_color(&Color::new(red, green, blue));
     }
   }
 

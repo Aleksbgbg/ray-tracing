@@ -31,6 +31,10 @@ impl Vec3 {
     self.z
   }
 
+  pub fn tuple(&self) -> (f64, f64, f64) {
+    (self.x(), self.y(), self.z())
+  }
+
   pub fn length_squared(&self) -> f64 {
     (self.x() * self.x()) + (self.y() * self.y()) + (self.z() * self.z())
   }
