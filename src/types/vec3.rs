@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vec3 {
@@ -11,23 +11,27 @@ pub type Point3 = Vec3;
 pub type Color = Vec3;
 
 impl Vec3 {
-  pub fn default() -> Vec3 {
-    Vec3::new(0.0, 0.0, 0.0)
+  pub const fn default() -> Vec3 {
+    Vec3::same_components(0.0)
   }
 
-  pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
+  pub const fn same_components(component: f64) -> Vec3 {
+    Vec3::new(component, component, component)
+  }
+
+  pub const fn new(x: f64, y: f64, z: f64) -> Vec3 {
     Vec3 { x, y, z }
   }
 
-  pub fn x(&self) -> f64 {
+  pub const fn x(&self) -> f64 {
     self.x
   }
 
-  pub fn y(&self) -> f64 {
+  pub const fn y(&self) -> f64 {
     self.y
   }
 
-  pub fn z(&self) -> f64 {
+  pub const fn z(&self) -> f64 {
     self.z
   }
 
@@ -85,6 +89,14 @@ impl Add for Vec3 {
 
   fn add(self, rhs: Self) -> Self::Output {
     Vec3::new(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z())
+  }
+}
+
+impl Sub for Vec3 {
+  type Output = Self;
+
+  fn sub(self, rhs: Self) -> Self::Output {
+    self + (-rhs)
   }
 }
 
