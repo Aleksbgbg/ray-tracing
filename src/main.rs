@@ -10,10 +10,12 @@ fn main() {
   println!("255");
 
   for row in (0..IMAGE_HEIGHT).rev() {
+    eprint!("\rScanlines remaining: {row}    ");
+
     for col in 0..IMAGE_WIDTH {
       let red = col as f64 / LAST_PIXEL_X as f64;
       let green = row as f64 / LAST_PIXEL_Y as f64;
-      let blue = 0.25;
+      let blue = 0.50;
 
       let red_scaled = 255f64 * red;
       let green_scaled = 255f64 * green;
@@ -22,4 +24,7 @@ fn main() {
       println!("{red_scaled} {green_scaled} {blue_scaled}");
     }
   }
+
+  eprintln!();
+  eprintln!("Done.");
 }
