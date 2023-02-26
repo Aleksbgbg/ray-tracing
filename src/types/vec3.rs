@@ -31,10 +31,6 @@ impl Vec3 {
     )
   }
 
-  pub fn dot_self(&self) -> f64 {
-    Self::dot(self, self)
-  }
-
   pub const fn x(&self) -> f64 {
     self.x
   }
@@ -62,13 +58,17 @@ impl Vec3 {
   pub fn unit(&self) -> Vec3 {
     (*self) / self.length()
   }
+
+  pub fn map<T: Fn(f64) -> f64>(&self, func: T) -> Vec3 {
+    Vec3::new(func(self.x()), func(self.y()), func(self.z()))
+  }
 }
 
 impl Neg for Vec3 {
   type Output = Self;
 
   fn neg(self) -> Self::Output {
-    Vec3::new(-self.x(), -self.y(), -self.z())
+    self.map(|value| -value)
   }
 }
 
@@ -116,7 +116,7 @@ impl Mul<f64> for Vec3 {
   type Output = Vec3;
 
   fn mul(self, rhs: f64) -> Self::Output {
-    Vec3::new(self.x() * rhs, self.y() * rhs, self.z() * rhs)
+    self.map(|value| value * rhs)
   }
 }
 
@@ -132,6 +132,6 @@ impl Div<f64> for Vec3 {
   type Output = Vec3;
 
   fn div(self, rhs: f64) -> Self::Output {
-    Vec3::new(self.x() / rhs, self.y() / rhs, self.z() / rhs)
+    self.map(|value| value / rhs)
   }
 }

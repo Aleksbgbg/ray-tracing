@@ -1,3 +1,4 @@
+use crate::utils::math;
 use std::cmp::Ordering;
 
 pub struct Quadratic {
@@ -7,10 +8,15 @@ pub struct Quadratic {
 }
 
 #[derive(PartialEq)]
-pub enum Roots {
+enum Roots {
   OneReal,
   TwoReal,
   TwoComplex,
+}
+
+enum DisriminantRoot {
+  Negative,
+  Positive,
 }
 
 impl Quadratic {
@@ -18,15 +24,35 @@ impl Quadratic {
     Self { a, b, c }
   }
 
-  pub fn discriminant(&self) -> f64 {
-    (self.b * self.b) - (4.0 * self.a * self.c)
+  fn discriminant(&self) -> f64 {
+    math::square(self.b) - (4.0 * self.a * self.c)
   }
 
-  pub fn roots(&self) -> Roots {
+  fn roots_type(&self) -> Roots {
     match self.discriminant().total_cmp(&0.0) {
       Ordering::Less => Roots::TwoComplex,
       Ordering::Equal => Roots::OneReal,
       Ordering::Greater => Roots::TwoReal,
+    }
+  }
+
+  fn find_root(&self, which: DisriminantRoot) -> f64 {
+    let multiplier = match which {
+      DisriminantRoot::Negative => -1.0,
+      DisriminantRoot::Positive => 1.0,
+    };
+
+    (-self.b + (multiplier * self.discriminant().sqrt())) / (2.0 * self.a)
+  }
+
+  pub fn find_real_roots(&self) -> Vec<f64> {
+    match self.roots_type() {
+      Roots::OneReal => vec![self.find_root(DisriminantRoot::Positive)],
+      Roots::TwoReal => vec![
+        self.find_root(DisriminantRoot::Negative),
+        self.find_root(DisriminantRoot::Positive),
+      ],
+      Roots::TwoComplex => vec![],
     }
   }
 }

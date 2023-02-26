@@ -1,31 +1,41 @@
-use crate::types::quadratic::{Quadratic, Roots};
+use crate::types::quadratic::Quadratic;
 use crate::types::ray::Ray;
 use crate::types::sphere::Sphere;
 use crate::types::vec3::{Color, Point3, Vec3};
-use crate::utils::color::{COLOR_LIGHT_BLUE, COLOR_RED, COLOR_WHITE};
+use crate::utils::color::{COLOR_LIGHT_BLUE, COLOR_WHITE};
+use crate::utils::math::Range;
 use crate::utils::{color, math};
 
 mod types;
 mod utils;
 
-fn hit_sphere(ray: &Ray, sphere: &Sphere) -> bool {
+fn hit_sphere(ray: &Ray, sphere: &Sphere) -> Option<Vec3> {
   let ray_to_sphere = ray.origin() - sphere.center();
 
-  Quadratic::new(
-    ray.direction().dot_self(),
+  let roots = Quadratic::new(
+    ray.direction().length_squared(),
     2.0 * Vec3::dot(&ray.direction(), &ray_to_sphere),
-    ray_to_sphere.dot_self() - math::square(sphere.radius()),
+    ray_to_sphere.length_squared() - math::square(sphere.radius()),
   )
-  .roots()
-    == Roots::TwoReal
+  .find_real_roots();
+
+  if roots.is_empty() {
+    None
+  } else {
+    let hit_time = roots[0];
+    Some(ray.at(hit_time))
+  }
 }
 
 fn ray_color(ray: &Ray) -> Color {
-  if hit_sphere(ray, &Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)) {
-    COLOR_RED
+  let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
+
+  if let Some(point) = hit_sphere(ray, &sphere) {
+    let normal = (point - sphere.center()).unit();
+    normal.map(|value| math::map_range(value, Range::new(-1.0, 1.0), Range::new(0.0, 1.0)))
   } else {
     let direction = ray.direction().unit();
-    let time = 0.5 * (direction.y() + 1.0);
+    let time = math::map_range(direction.y(), Range::new(-1.0, 1.0), Range::new(0.0, 1.0));
 
     color::linear_blend(COLOR_LIGHT_BLUE, COLOR_WHITE, time)
   }
