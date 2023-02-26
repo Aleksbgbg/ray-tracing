@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Vec3 {
   x: f64,
   y: f64,
@@ -11,16 +11,28 @@ pub type Point3 = Vec3;
 pub type Color = Vec3;
 
 impl Vec3 {
-  pub const fn default() -> Vec3 {
-    Vec3::same_components(0.0)
-  }
-
   pub const fn same_components(component: f64) -> Vec3 {
     Vec3::new(component, component, component)
   }
 
   pub const fn new(x: f64, y: f64, z: f64) -> Vec3 {
     Vec3 { x, y, z }
+  }
+
+  pub fn dot(left: &Vec3, right: &Vec3) -> f64 {
+    (left.x() * right.x()) + (left.y() * right.y()) + (left.z() * right.z())
+  }
+
+  pub fn cross(left: &Vec3, right: &Vec3) -> Vec3 {
+    Vec3::new(
+      (left.y() * right.z()) - (left.z() * right.y()),
+      (left.z() * right.x()) - (left.x() * right.z()),
+      (left.x() * right.y()) - (left.y() * right.x()),
+    )
+  }
+
+  pub fn dot_self(&self) -> f64 {
+    Self::dot(self, self)
   }
 
   pub const fn x(&self) -> f64 {
@@ -122,16 +134,4 @@ impl Div<f64> for Vec3 {
   fn div(self, rhs: f64) -> Self::Output {
     Vec3::new(self.x() / rhs, self.y() / rhs, self.z() / rhs)
   }
-}
-
-pub fn dot(left: &Vec3, right: &Vec3) -> f64 {
-  (left.x() * right.x()) + (left.y() * right.y()) + (left.z() * right.z())
-}
-
-pub fn cross(left: &Vec3, right: &Vec3) -> Vec3 {
-  Vec3::new(
-    (left.y() * right.z()) - (left.z() * right.y()),
-    (left.z() * right.x()) - (left.x() * right.z()),
-    (left.x() * right.y()) - (left.y() * right.x()),
-  )
 }
