@@ -1,4 +1,4 @@
-use crate::types::quadratic::Quadratic;
+use crate::types::hittable::Hittable;
 use crate::types::ray::Ray;
 use crate::types::sphere::Sphere;
 use crate::types::vec3::{Color, Point3, Vec3};
@@ -9,30 +9,13 @@ use crate::utils::{color, math};
 mod types;
 mod utils;
 
-fn hit_sphere(ray: &Ray, sphere: &Sphere) -> Option<Vec3> {
-  let ray_to_sphere = ray.origin() - sphere.center();
-
-  let roots = Quadratic::new(
-    ray.direction().length_squared(),
-    2.0 * Vec3::dot(&ray.direction(), &ray_to_sphere),
-    ray_to_sphere.length_squared() - math::square(sphere.radius()),
-  )
-  .find_real_roots();
-
-  if roots.is_empty() {
-    None
-  } else {
-    let hit_time = roots[0];
-    Some(ray.at(hit_time))
-  }
-}
-
 fn ray_color(ray: &Ray) -> Color {
   let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
 
-  if let Some(point) = hit_sphere(ray, &sphere) {
-    let normal = (point - sphere.center()).unit();
-    normal.map(|value| math::map_range(value, Range::new(-1.0, 1.0), Range::new(0.0, 1.0)))
+  if let Some(hit) = sphere.hit(ray, Range::new(0.0, f64::MAX)) {
+    hit
+      .normal()
+      .map(|value| math::map_range(value, Range::new(-1.0, 1.0), Range::new(0.0, 1.0)))
   } else {
     let direction = ray.direction().unit();
     let time = math::map_range(direction.y(), Range::new(-1.0, 1.0), Range::new(0.0, 1.0));

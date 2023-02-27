@@ -8,6 +8,9 @@ pub trait Mathematical:
   + Mul<Output = Self>
   + Div<Output = Self>
 {
+  fn is_within(self, range: Range<Self>) -> bool {
+    (range.start <= self) && (self < range.end)
+  }
 }
 
 impl Mathematical for f64 {}
@@ -17,6 +20,7 @@ pub fn square<T: Mathematical>(value: T) -> T {
 }
 
 /// A range [start, end).
+#[derive(Clone, Copy)]
 pub struct Range<T> {
   start: T,
   end: T,
@@ -33,8 +37,7 @@ impl<T: Mathematical> Range<T> {
 }
 
 pub fn map_range<T: Mathematical>(val: T, src: Range<T>, dst: Range<T>) -> T {
-  debug_assert!(val >= src.start);
-  debug_assert!(val < src.end);
+  debug_assert!(val.is_within(src));
 
   ((val - src.start) * (dst.dist() / src.dist())) + dst.start
 }
