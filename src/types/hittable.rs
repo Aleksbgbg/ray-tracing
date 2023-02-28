@@ -51,3 +51,19 @@ impl Hit {
 pub trait Hittable {
   fn hit(&self, ray: &Ray, hittable_range: Range<f64>) -> Option<Hit>;
 }
+
+type HittablePtr = Box<dyn Hittable>;
+
+impl Hittable for Vec<HittablePtr> {
+  fn hit(&self, ray: &Ray, hittable_range: Range<f64>) -> Option<Hit> {
+    let mut vec = self
+      .iter()
+      .map(|value| value.hit(ray, hittable_range))
+      .filter(|value| value.is_some())
+      .flatten()
+      .collect::<Vec<Hit>>();
+    vec.sort_unstable_by(|a, b| a.time.total_cmp(&b.time));
+
+    vec.pop()
+  }
+}
