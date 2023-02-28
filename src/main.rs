@@ -1,9 +1,11 @@
+use crate::types::camera::Camera;
 use crate::types::hittable::Hittable;
 use crate::types::ray::Ray;
 use crate::types::sphere::Sphere;
 use crate::types::vec3::{Color, Point3, Vec3};
 use crate::utils::color::{COLOR_LIGHT_BLUE, COLOR_WHITE};
 use crate::utils::math::Range;
+use crate::utils::random::random;
 use crate::utils::{color, math};
 
 mod types;
@@ -23,7 +25,7 @@ fn ray_color(ray: &Ray, world: &dyn Hittable) -> Color {
 }
 
 fn main() {
-  // Image
+  const SAMPLES_PER_PIXEL: usize = 100;
   const ASPECT_RATIO: f64 = 16.0 / 9.0;
 
   const IMAGE_WIDTH: usize = 400;
@@ -32,20 +34,9 @@ fn main() {
   const LAST_PIXEL_X: usize = IMAGE_WIDTH - 1;
   const LAST_PIXEL_Y: usize = IMAGE_HEIGHT - 1;
 
-  // Camera
-  const VIEWPORT_HEIGHT: f64 = 2.0;
-  const VIEWPORT_WIDTH: f64 = ASPECT_RATIO * VIEWPORT_HEIGHT;
-  const FOCAL_LENGTH: f64 = 1.0;
+  let camera = Camera::new(ASPECT_RATIO);
 
-  let origin = Point3::default();
-  const HORIZONTAL: Vec3 = Vec3::new(VIEWPORT_WIDTH, 0.0, 0.0);
-  const VERTICAL: Vec3 = Vec3::new(0.0, VIEWPORT_HEIGHT, 0.0);
-
-  let lower_left_corner =
-    origin - (HORIZONTAL / 2.0) - (VERTICAL / 2.0) - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
-
-  // World
-  let hittables: Vec<Box<dyn Hittable>> = vec![
+  let world: Vec<Box<dyn Hittable>> = vec![
     Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)),
     Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)),
   ];
@@ -59,15 +50,18 @@ fn main() {
     eprint!("\rScanlines remaining: {row}    ");
 
     for col in 0..IMAGE_WIDTH {
-      let u = col as f64 / LAST_PIXEL_X as f64;
-      let v = row as f64 / LAST_PIXEL_Y as f64;
+      let mut pixel_color = Color::default();
 
-      let ray = Ray::new(
-        origin,
-        lower_left_corner + (u * HORIZONTAL) + (v * VERTICAL) - origin,
-      );
+      for _ in 0..SAMPLES_PER_PIXEL {
+        let u = (col as f64 + random()) / LAST_PIXEL_X as f64;
+        let v = (row as f64 + random()) / LAST_PIXEL_Y as f64;
 
-      color::print(ray_color(&ray, &hittables));
+        let ray = camera.get_ray((u, v));
+
+        pixel_color += ray_color(&ray, &world);
+      }
+
+      color::print(pixel_color, SAMPLES_PER_PIXEL);
     }
   }
 

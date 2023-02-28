@@ -41,3 +41,13 @@ pub fn map_range<T: Mathematical>(val: T, src: Range<T>, dst: Range<T>) -> T {
 
   ((val - src.start) * (dst.dist() / src.dist())) + dst.start
 }
+
+pub fn clamp(value: f64, range: Range<f64>) -> f64 {
+  if value < range.start {
+    range.start
+  } else if value > range.end {
+    range.end
+  } else {
+    value
+  }
+}
