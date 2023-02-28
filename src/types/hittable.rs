@@ -62,7 +62,7 @@ impl Hittable for Vec<HittablePtr> {
       .filter(|value| value.is_some())
       .flatten()
       .collect::<Vec<Hit>>();
-    vec.sort_unstable_by(|a, b| a.time.total_cmp(&b.time));
+    vec.sort_unstable_by(|a, b| b.time.total_cmp(&a.time));
 
     vec.pop()
   }

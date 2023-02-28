@@ -9,10 +9,8 @@ use crate::utils::{color, math};
 mod types;
 mod utils;
 
-fn ray_color(ray: &Ray) -> Color {
-  let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
-
-  if let Some(hit) = sphere.hit(ray, Range::new(0.0, f64::MAX)) {
+fn ray_color(ray: &Ray, world: &dyn Hittable) -> Color {
+  if let Some(hit) = world.hit(ray, Range::new(0.0, f64::MAX)) {
     hit
       .normal()
       .map(|value| math::map_range(value, Range::new(-1.0, 1.0), Range::new(0.0, 1.0)))
@@ -46,6 +44,12 @@ fn main() {
   let lower_left_corner =
     origin - (HORIZONTAL / 2.0) - (VERTICAL / 2.0) - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
 
+  // World
+  let hittables: Vec<Box<dyn Hittable>> = vec![
+    Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)),
+    Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)),
+  ];
+
   // Render
   println!("P3");
   println!("{IMAGE_WIDTH} {IMAGE_HEIGHT}");
@@ -63,7 +67,7 @@ fn main() {
         lower_left_corner + (u * HORIZONTAL) + (v * VERTICAL) - origin,
       );
 
-      color::print(ray_color(&ray));
+      color::print(ray_color(&ray, &hittables));
     }
   }
 
