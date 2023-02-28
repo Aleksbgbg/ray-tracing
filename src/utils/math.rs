@@ -9,7 +9,7 @@ pub trait Mathematical:
   + Div<Output = Self>
 {
   fn is_within(self, range: Range<Self>) -> bool {
-    (range.start <= self) && (self < range.end)
+    (range.start <= self) && (self <= range.end)
   }
 }
 
@@ -19,7 +19,7 @@ pub fn square<T: Mathematical>(value: T) -> T {
   value * value
 }
 
-/// A range [start, end).
+/// A range [start, end].
 #[derive(Clone, Copy)]
 pub struct Range<T> {
   start: T,
