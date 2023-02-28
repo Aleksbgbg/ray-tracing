@@ -7,3 +7,7 @@
 ### Run
 
 `cargo run > image.ppm`
+
+For reasonable performance:
+
+`cargo run --release > image.ppm`

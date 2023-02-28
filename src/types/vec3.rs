@@ -1,4 +1,5 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
+use crate::utils::random;
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, RangeInclusive, Sub};
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Vec3 {
@@ -17,6 +18,18 @@ impl Vec3 {
 
   pub const fn new(x: f64, y: f64, z: f64) -> Vec3 {
     Vec3 { x, y, z }
+  }
+
+  pub fn random() -> Vec3 {
+    Vec3::random_range(-1.0..=1.0)
+  }
+
+  pub fn random_range(range: RangeInclusive<f64>) -> Vec3 {
+    Vec3::new(
+      random::random_range(range.clone()),
+      random::random_range(range.clone()),
+      random::random_range(range.clone()),
+    )
   }
 
   pub fn dot(left: &Vec3, right: &Vec3) -> f64 {
