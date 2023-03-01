@@ -23,7 +23,7 @@ fn unit_sphere_random_point() -> Vec3 {
 fn ray_color(ray: &Ray, world: &dyn Hittable, bounce_depth: usize) -> Color {
   if bounce_depth == 0 {
     Color::default()
-  } else if let Some(hit) = world.hit(ray, Range::new(0.0, f64::INFINITY)) {
+  } else if let Some(hit) = world.hit(ray, Range::new(0.001, f64::INFINITY)) {
     let bounce_ray = Ray::new(hit.point(), hit.normal() + unit_sphere_random_point());
     0.5 * ray_color(&bounce_ray, world, bounce_depth - 1)
   } else {
