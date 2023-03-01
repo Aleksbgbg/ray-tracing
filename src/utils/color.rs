@@ -7,9 +7,13 @@ pub fn linear_blend(first: Color, second: Color, fraction: f64) -> Color {
   (fraction * first) + ((1.0 - fraction) * second)
 }
 
+fn gamma_correct(value: f64) -> f64 {
+  value.sqrt()
+}
+
 pub fn print(color: Color, samples: usize) {
   let (red, green, blue) = color
-    .map(|component| 255.0 * component / samples as f64)
+    .map(|component| 255.0 * gamma_correct(component / samples as f64))
     .tuple();
 
   println!("{} {} {}", red as usize, green as usize, blue as usize);
