@@ -34,8 +34,7 @@ impl Hittable for Sphere {
     )
     .find_real_roots()
     .iter()
-    .filter(|root| root.is_within(hittable_range))
-    .next()
+    .find(|root| root.is_within(hittable_range))
     .map(|&root| Hit::new(root, ray, |point| point - self.center()))
   }
 }

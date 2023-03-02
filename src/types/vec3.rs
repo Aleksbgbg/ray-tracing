@@ -28,7 +28,7 @@ impl Vec3 {
     Vec3::new(
       random::random_range(range.clone()),
       random::random_range(range.clone()),
-      random::random_range(range.clone()),
+      random::random_range(range),
     )
   }
 
