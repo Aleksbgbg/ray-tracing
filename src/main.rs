@@ -1,3 +1,5 @@
+#![feature(test)]
+
 use crate::types::camera::Camera;
 use crate::types::hittable::Hittable;
 use crate::types::ray::Ray;
@@ -7,6 +9,7 @@ use crate::utils::color::{COLOR_LIGHT_BLUE, COLOR_WHITE};
 use crate::utils::math::Range;
 use crate::utils::{color, math, random};
 
+mod benchmark;
 mod types;
 mod utils;
 
