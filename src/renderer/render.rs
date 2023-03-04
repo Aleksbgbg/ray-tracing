@@ -7,18 +7,18 @@ use crate::renderer::core::{color, random};
 use crate::renderer::scene::camera::Camera;
 use crate::renderer::scene::hittable::Hittable;
 
-pub struct Scene {
-  pub camera: Camera,
-  pub world: Box<dyn Hittable>,
-}
-
 pub struct RenderParams {
   pub last_pixel: Vec2<usize>,
   pub samples_per_pixel: usize,
   pub max_bounces: usize,
 }
 
-pub fn render_pixel(scene: &Scene, params: &RenderParams, pixel: Vec2<usize>) -> Color {
+pub struct Scene {
+  pub camera: Camera,
+  pub world: Box<dyn Hittable>,
+}
+
+pub fn render_pixel(params: &RenderParams, scene: &Scene, pixel: Vec2<usize>) -> Color {
   let mut pixel_color = Color::default();
 
   for _ in 0..params.samples_per_pixel {

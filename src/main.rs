@@ -28,10 +28,7 @@ const IMAGE_PIXELS: usize = IMAGE_WIDTH * IMAGE_HEIGHT;
 const LAST_PIXEL_X: usize = IMAGE_WIDTH - 1;
 const LAST_PIXEL_Y: usize = IMAGE_HEIGHT - 1;
 
-enum RenderMessage {
-  Pixel(usize, Color),
-  ScanlineComplete,
-}
+struct RenderMessage(usize, Color);
 
 struct RenderThreadContext {
   thread_id: usize,
@@ -43,8 +40,8 @@ struct RenderThreadContext {
 
 fn render_thread(
   context: RenderThreadContext,
-  scene: Arc<Scene>,
   params: RenderParams,
+  scene: Arc<Scene>,
 ) -> Result<()> {
   for iteration in 0..context.scanlines_per_thread {
     let row = context.thread_id + (iteration * context.threads);
@@ -56,13 +53,11 @@ fn render_thread(
     let row_index = row * IMAGE_WIDTH;
 
     for col in 0..IMAGE_WIDTH {
-      context.sender.send(RenderMessage::Pixel(
+      context.sender.send(RenderMessage(
         row_index + col,
-        render::render_pixel(&scene, &params, Vec2::new(col, row)),
+        render::render_pixel(&params, &scene, Vec2::new(col, row)),
       ))?;
     }
-
-    context.sender.send(RenderMessage::ScanlineComplete)?;
   }
 
   Ok(())
@@ -89,15 +84,15 @@ fn spawn_render_threads(scene: Arc<Scene>) -> Receiver<RenderMessage> {
       scanline_max: IMAGE_HEIGHT,
       sender: sender.clone(),
     };
-    let scene = Arc::clone(&scene);
     let params = RenderParams {
       last_pixel: Vec2::new(LAST_PIXEL_X, LAST_PIXEL_Y),
       samples_per_pixel: SAMPLES_PER_PIXEL,
       max_bounces: MAX_BOUNCES,
     };
+    let scene = Arc::clone(&scene);
 
     thread::spawn(move || {
-      render_thread(context, scene, params).expect("Render thread did not execute successfully.");
+      render_thread(context, params, scene).expect("Render thread did not execute successfully.");
     });
   }
 
@@ -116,16 +111,14 @@ fn main() -> Result<()> {
   let receiver = spawn_render_threads(Arc::new(Scene { camera, world }));
 
   let mut scanlines_remaining = IMAGE_HEIGHT;
-  for _ in 0..(IMAGE_PIXELS + IMAGE_HEIGHT) {
-    match receiver.recv()? {
-      RenderMessage::Pixel(index, color) => {
-        image[index] = color;
-      }
-      RenderMessage::ScanlineComplete => {
-        scanlines_remaining -= 1;
-        eprint!("\rScanlines remaining: {scanlines_remaining}  ");
-      }
-    };
+  for _ in 0..IMAGE_PIXELS {
+    let RenderMessage(index, color) = receiver.recv()?;
+    image[index] = color;
+
+    if (index % IMAGE_WIDTH) == LAST_PIXEL_X {
+      scanlines_remaining -= 1;
+      eprint!("\rScanlines remaining: {scanlines_remaining}  ");
+    }
   }
 
   println!("P3");
