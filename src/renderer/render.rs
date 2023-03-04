@@ -1,11 +1,11 @@
-use crate::types::camera::Camera;
-use crate::types::hittable::Hittable;
-use crate::types::ray::Ray;
-use crate::types::vec2::Vec2;
-use crate::types::vec3::{Color, Vec3};
-use crate::utils::color::{COLOR_LIGHT_BLUE, COLOR_WHITE};
-use crate::utils::math::Range;
-use crate::utils::{color, math, random};
+use crate::renderer::core::color::{COLOR_LIGHT_BLUE, COLOR_WHITE};
+use crate::renderer::core::math::{self, Range};
+use crate::renderer::core::ray::Ray;
+use crate::renderer::core::vec2::Vec2;
+use crate::renderer::core::vec3::{Color, Vec3};
+use crate::renderer::core::{color, random};
+use crate::renderer::scene::camera::Camera;
+use crate::renderer::scene::hittable::Hittable;
 
 pub struct Scene {
   pub camera: Camera,

@@ -1,4 +1,4 @@
-use crate::utils::random;
+use crate::renderer::core::random;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, RangeInclusive, Sub};
 
 #[derive(Debug, Clone, Copy, Default)]

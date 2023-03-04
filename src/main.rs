@@ -2,17 +2,16 @@
 
 #[allow(unused_imports)]
 mod benchmark;
-mod render;
+mod renderer;
 mod types;
-mod utils;
 
-use crate::render::{RenderParams, Scene};
-use crate::types::camera::Camera;
+use crate::renderer::core::color;
+use crate::renderer::core::vec2::Vec2;
+use crate::renderer::core::vec3::{Color, Point3, Vec3};
+use crate::renderer::render::{self, RenderParams, Scene};
+use crate::renderer::scene::camera::Camera;
+use crate::renderer::scene::sphere::Sphere;
 use crate::types::result::Result;
-use crate::types::sphere::Sphere;
-use crate::types::vec2::Vec2;
-use crate::types::vec3::{Color, Point3, Vec3};
-use crate::utils::color;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{mpsc, Arc};
 use std::thread;
@@ -133,7 +132,7 @@ fn main() -> Result<()> {
   println!("{IMAGE_WIDTH} {IMAGE_HEIGHT}");
   println!("255");
   for pixel_color in image.into_iter().rev() {
-    color::print(pixel_color);
+    color::print_color(pixel_color);
   }
 
   eprintln!();

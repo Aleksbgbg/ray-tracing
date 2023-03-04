@@ -1,4 +1,4 @@
-use crate::utils::math;
+use crate::renderer::core::math;
 use std::cmp::Ordering;
 
 pub struct Quadratic {

@@ -1,8 +1,8 @@
-use super::hittable::{Hit, Hittable};
-use super::quadratic::Quadratic;
-use super::ray::Ray;
-use super::vec3::Vec3;
-use crate::utils::math::{self, Mathematical, Range};
+use crate::renderer::core::math::{self, Mathematical, Range};
+use crate::renderer::core::quadratic::Quadratic;
+use crate::renderer::core::ray::Ray;
+use crate::renderer::core::vec3::Vec3;
+use crate::renderer::scene::hittable::{Hit, Hittable};
 
 pub struct Sphere {
   center: Vec3,

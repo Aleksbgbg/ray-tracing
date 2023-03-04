@@ -1,4 +1,4 @@
-use super::vec3::{Point3, Vec3};
+use crate::renderer::core::vec3::{Point3, Vec3};
 
 #[derive(Default)]
 pub struct Ray {
