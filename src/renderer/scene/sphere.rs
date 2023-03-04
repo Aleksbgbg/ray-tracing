@@ -2,16 +2,23 @@ use crate::renderer::core::math::{self, Mathematical, Range};
 use crate::renderer::core::quadratic::Quadratic;
 use crate::renderer::core::ray::Ray;
 use crate::renderer::core::vec3::Vec3;
+use crate::renderer::materials::material::Material;
 use crate::renderer::scene::hittable::{Hit, Hittable};
+use std::sync::Arc;
 
 pub struct Sphere {
   center: Vec3,
   radius: f64,
+  material: Arc<dyn Material>,
 }
 
 impl Sphere {
-  pub fn new(center: Vec3, radius: f64) -> Self {
-    Sphere { center, radius }
+  pub fn new(center: Vec3, radius: f64, material: Arc<dyn Material>) -> Self {
+    Sphere {
+      center,
+      radius,
+      material,
+    }
   }
 
   pub fn center(&self) -> Vec3 {
@@ -22,6 +29,9 @@ impl Sphere {
     self.radius
   }
 }
+
+unsafe impl Send for Sphere {}
+unsafe impl Sync for Sphere {}
 
 impl Hittable for Sphere {
   fn hit(&self, ray: &Ray, hittable_range: Range<f64>) -> Option<Hit> {
@@ -35,6 +45,10 @@ impl Hittable for Sphere {
     .find_real_roots()
     .iter()
     .find(|root| root.is_within(hittable_range))
-    .map(|&root| Hit::new(root, ray, |point| point - self.center()))
+    .map(|&root| {
+      Hit::new(root, ray, Arc::clone(&self.material), |point| {
+        point - self.center()
+      })
+    })
   }
 }

@@ -41,3 +41,7 @@ pub fn map_range<T: Mathematical>(val: T, src: Range<T>, dst: Range<T>) -> T {
 
   ((val - src.start) * (dst.dist() / src.dist())) + dst.start
 }
+
+pub fn near_zero(val: f64) -> bool {
+  val.abs() < 1e-8
+}

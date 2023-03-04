@@ -1,4 +1,5 @@
 pub mod color;
+pub mod diffuse;
 pub mod math;
 pub mod quadratic;
 pub mod random;

@@ -1,4 +1,4 @@
-use crate::renderer::core::random;
+use crate::renderer::core::{math, random};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, RangeInclusive, Sub};
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -72,8 +72,28 @@ impl Vec3 {
     (*self) / self.length()
   }
 
-  pub fn map<T: Fn(f64) -> f64>(&self, func: T) -> Vec3 {
+  pub fn map(&self, func: impl Fn(f64) -> f64) -> Vec3 {
     Vec3::new(func(self.x()), func(self.y()), func(self.z()))
+  }
+
+  pub fn all(&self, func: impl Fn(f64) -> bool) -> bool {
+    func(self.x()) && func(self.y()) && func(self.z())
+  }
+
+  pub fn near_zero(&self) -> bool {
+    self.all(math::near_zero)
+  }
+
+  pub fn non_zero_or<'a>(&'a self, val: &'a Vec3) -> &'a Vec3 {
+    if self.near_zero() {
+      val
+    } else {
+      self
+    }
+  }
+
+  pub fn reflect(&self, normal: &Vec3) -> Vec3 {
+    *self - (2.0 * Vec3::dot(self, normal) * *normal)
   }
 }
 
@@ -95,9 +115,7 @@ impl AddAssign for Vec3 {
 
 impl MulAssign for Vec3 {
   fn mul_assign(&mut self, rhs: Self) {
-    self.x *= rhs.x();
-    self.y *= rhs.y();
-    self.z *= rhs.z();
+    *self = *self * rhs;
   }
 }
 
@@ -122,6 +140,14 @@ impl Sub for Vec3 {
 
   fn sub(self, rhs: Self) -> Self::Output {
     self + (-rhs)
+  }
+}
+
+impl Mul for Vec3 {
+  type Output = Vec3;
+
+  fn mul(self, rhs: Vec3) -> Self::Output {
+    Vec3::new(self.x() * rhs.x(), self.y() * rhs.y(), self.z() * rhs.z())
   }
 }
 

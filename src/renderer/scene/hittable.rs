@@ -1,6 +1,8 @@
 use crate::renderer::core::math::Range;
 use crate::renderer::core::ray::Ray;
 use crate::renderer::core::vec3::{Point3, Vec3};
+use crate::renderer::materials::material::Material;
+use std::sync::Arc;
 
 pub enum Face {
   Front,
@@ -12,10 +14,16 @@ pub struct Hit {
   point: Point3,
   normal: Vec3,
   face: Face,
+  material: Arc<dyn Material>,
 }
 
 impl Hit {
-  pub fn new(time: f64, ray: &Ray, normal_calc: impl FnOnce(Point3) -> Vec3) -> Self {
+  pub fn new(
+    time: f64,
+    ray: &Ray,
+    material: Arc<dyn Material>,
+    normal_calc: impl FnOnce(Point3) -> Vec3,
+  ) -> Self {
     let point = ray.at(time);
     let outward_normal = normal_calc(point).unit();
     let face = if Vec3::dot(&ray.direction(), &outward_normal) < 0.0 {
@@ -31,6 +39,7 @@ impl Hit {
         Face::Front => outward_normal,
         Face::Back => -outward_normal,
       },
+      material,
       face,
     }
   }
@@ -45,6 +54,10 @@ impl Hit {
 
   pub fn normal(&self) -> Vec3 {
     self.normal
+  }
+
+  pub fn material(&self) -> &dyn Material {
+    self.material.as_ref()
   }
 }
 
