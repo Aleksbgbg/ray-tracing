@@ -11,10 +11,11 @@ fn gamma_correct(value: f64) -> f64 {
   value.sqrt()
 }
 
-pub fn print(color: Color, samples: usize) {
-  let (red, green, blue) = color
-    .map(|component| 255.0 * gamma_correct(component / samples as f64))
-    .tuple();
+pub fn calculate_color(color: Color, samples: usize) -> Color {
+  color.map(|component| 255.0 * gamma_correct(component / samples as f64))
+}
 
+pub fn print(color: Color) {
+  let (red, green, blue) = color.tuple();
   println!("{} {} {}", red as usize, green as usize, blue as usize);
 }

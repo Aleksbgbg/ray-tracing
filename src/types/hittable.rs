@@ -48,13 +48,11 @@ impl Hit {
   }
 }
 
-pub trait Hittable {
+pub trait Hittable: Sync + Send {
   fn hit(&self, ray: &Ray, hittable_range: Range<f64>) -> Option<Hit>;
 }
 
-type HittablePtr = Box<dyn Hittable>;
-
-impl Hittable for Vec<HittablePtr> {
+impl<T: Hittable> Hittable for Vec<T> {
   fn hit(&self, ray: &Ray, hittable_range: Range<f64>) -> Option<Hit> {
     let mut vec = self
       .iter()

@@ -1,84 +1,143 @@
 #![feature(test)]
 
-use crate::types::camera::Camera;
-use crate::types::hittable::Hittable;
-use crate::types::ray::Ray;
-use crate::types::sphere::Sphere;
-use crate::types::vec3::{Color, Point3, Vec3};
-use crate::utils::color::{COLOR_LIGHT_BLUE, COLOR_WHITE};
-use crate::utils::math::Range;
-use crate::utils::{color, math, random};
-
+#[allow(unused_imports)]
 mod benchmark;
+mod render;
 mod types;
 mod utils;
 
-fn unit_sphere_random_point() -> Vec3 {
-  loop {
-    let point = Vec3::random();
+use crate::render::{RenderParams, Scene};
+use crate::types::camera::Camera;
+use crate::types::result::Result;
+use crate::types::sphere::Sphere;
+use crate::types::vec2::Vec2;
+use crate::types::vec3::{Color, Point3, Vec3};
+use crate::utils::color;
+use std::sync::mpsc::{Receiver, Sender};
+use std::sync::{mpsc, Arc};
+use std::thread;
 
-    if point.length_squared() < 1.0 {
-      break point;
+const MAX_BOUNCES: usize = 50;
+const SAMPLES_PER_PIXEL: usize = 100;
+const ASPECT_RATIO: f64 = 16.0 / 9.0;
+
+const IMAGE_WIDTH: usize = 400;
+const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
+
+const IMAGE_PIXELS: usize = IMAGE_WIDTH * IMAGE_HEIGHT;
+
+const LAST_PIXEL_X: usize = IMAGE_WIDTH - 1;
+const LAST_PIXEL_Y: usize = IMAGE_HEIGHT - 1;
+
+enum RenderMessage {
+  Pixel(usize, Color),
+  ScanlineComplete,
+}
+
+struct RenderThreadContext {
+  thread_id: usize,
+  threads: usize,
+  scanlines_per_thread: usize,
+  scanline_max: usize,
+  sender: Sender<RenderMessage>,
+}
+
+fn render_thread(
+  context: RenderThreadContext,
+  scene: Arc<Scene>,
+  params: RenderParams,
+) -> Result<()> {
+  for iteration in 0..context.scanlines_per_thread {
+    let row = context.thread_id + (iteration * context.threads);
+
+    if row >= context.scanline_max {
+      break;
     }
+
+    let row_index = row * IMAGE_WIDTH;
+
+    for col in 0..IMAGE_WIDTH {
+      context.sender.send(RenderMessage::Pixel(
+        row_index + col,
+        render::render_pixel(&scene, &params, Vec2::new(col, row)),
+      ))?;
+    }
+
+    context.sender.send(RenderMessage::ScanlineComplete)?;
   }
+
+  Ok(())
 }
 
-fn ray_color(ray: &Ray, world: &dyn Hittable, bounce_depth: usize) -> Color {
-  if bounce_depth == 0 {
-    Color::default()
-  } else if let Some(hit) = world.hit(ray, Range::new(0.001, f64::INFINITY)) {
-    let bounce_ray = Ray::new(hit.point(), hit.normal() + unit_sphere_random_point());
-    0.5 * ray_color(&bounce_ray, world, bounce_depth - 1)
-  } else {
-    let direction = ray.direction().unit();
-    let time = math::map_range(direction.y(), Range::new(-1.0, 1.0), Range::new(0.0, 1.0));
+fn spawn_render_threads(scene: Arc<Scene>) -> Receiver<RenderMessage> {
+  let (sender, receiver) = mpsc::channel();
 
-    color::linear_blend(COLOR_LIGHT_BLUE, COLOR_WHITE, time)
+  let threads = {
+    let threads = num_cpus::get();
+    let cores = num_cpus::get_physical();
+
+    eprintln!("Running {threads} threads on {cores} cores...");
+
+    threads
+  };
+  let scanlines_per_thread = (IMAGE_HEIGHT as f64 / threads as f64).ceil() as usize;
+
+  for thread_id in 0..threads {
+    let context = RenderThreadContext {
+      thread_id,
+      threads,
+      scanlines_per_thread,
+      scanline_max: IMAGE_HEIGHT,
+      sender: sender.clone(),
+    };
+    let scene = Arc::clone(&scene);
+    let params = RenderParams {
+      last_pixel: Vec2::new(LAST_PIXEL_X, LAST_PIXEL_Y),
+      samples_per_pixel: SAMPLES_PER_PIXEL,
+      max_bounces: MAX_BOUNCES,
+    };
+
+    thread::spawn(move || {
+      render_thread(context, scene, params).expect("Render thread did not execute successfully.");
+    });
   }
+
+  receiver
 }
 
-fn main() {
-  const MAX_BOUNCES: usize = 50;
-  const SAMPLES_PER_PIXEL: usize = 100;
-  const ASPECT_RATIO: f64 = 16.0 / 9.0;
-
-  const IMAGE_WIDTH: usize = 400;
-  const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
-
-  const LAST_PIXEL_X: usize = IMAGE_WIDTH - 1;
-  const LAST_PIXEL_Y: usize = IMAGE_HEIGHT - 1;
-
+fn main() -> Result<()> {
   let camera = Camera::new(ASPECT_RATIO);
+  let world = Box::new(vec![
+    Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5),
+    Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0),
+  ]);
 
-  let world: Vec<Box<dyn Hittable>> = vec![
-    Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)),
-    Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)),
-  ];
+  let mut image = vec![Vec3::default(); IMAGE_PIXELS];
 
-  // Render
+  let receiver = spawn_render_threads(Arc::new(Scene { camera, world }));
+
+  let mut scanlines_remaining = IMAGE_HEIGHT;
+  for _ in 0..(IMAGE_PIXELS + IMAGE_HEIGHT) {
+    match receiver.recv()? {
+      RenderMessage::Pixel(index, color) => {
+        image[index] = color;
+      }
+      RenderMessage::ScanlineComplete => {
+        scanlines_remaining -= 1;
+        eprint!("\rScanlines remaining: {scanlines_remaining}  ");
+      }
+    };
+  }
+
   println!("P3");
   println!("{IMAGE_WIDTH} {IMAGE_HEIGHT}");
   println!("255");
-
-  for row in (0..IMAGE_HEIGHT).rev() {
-    eprint!("\rScanlines remaining: {row}    ");
-
-    for col in 0..IMAGE_WIDTH {
-      let mut pixel_color = Color::default();
-
-      for _ in 0..SAMPLES_PER_PIXEL {
-        let u = (col as f64 + random::random()) / LAST_PIXEL_X as f64;
-        let v = (row as f64 + random::random()) / LAST_PIXEL_Y as f64;
-
-        let ray = camera.get_ray((u, v));
-
-        pixel_color += ray_color(&ray, &world, MAX_BOUNCES);
-      }
-
-      color::print(pixel_color, SAMPLES_PER_PIXEL);
-    }
+  for pixel_color in image.into_iter().rev() {
+    color::print(pixel_color);
   }
 
   eprintln!();
   eprintln!("Done.");
+
+  Ok(())
 }
