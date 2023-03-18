@@ -30,9 +30,6 @@ impl Sphere {
   }
 }
 
-unsafe impl Send for Sphere {}
-unsafe impl Sync for Sphere {}
-
 impl Hittable for Sphere {
   fn hit(&self, ray: &Ray, hittable_range: Range<f64>) -> Option<Hit> {
     let ray_to_sphere = ray.origin() - self.center();
