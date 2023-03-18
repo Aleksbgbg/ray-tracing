@@ -69,6 +69,12 @@ impl Vec3 {
   }
 
   pub fn unit(&self) -> Vec3 {
+    debug_assert_ne!(
+      self.length(),
+      0.0,
+      "Converting the zero vector to a unit vector is not defined."
+    );
+
     (*self) / self.length()
   }
 
