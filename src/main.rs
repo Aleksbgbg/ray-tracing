@@ -8,6 +8,7 @@ mod types;
 use crate::renderer::core::color;
 use crate::renderer::core::vec2::Vec2;
 use crate::renderer::core::vec3::{Color, Point3, Vec3};
+use crate::renderer::materials::dielectric::Dielectric;
 use crate::renderer::materials::lambertian::Lambertian;
 use crate::renderer::materials::material::Material;
 use crate::renderer::materials::metal::Metal;
@@ -104,13 +105,14 @@ fn spawn_render_threads(scene: Arc<Scene>) -> Receiver<RenderMessage> {
 
 fn main() -> Result<()> {
   let ground: Arc<dyn Material> = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-  let center: Arc<dyn Material> = Arc::new(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
-  let left: Arc<dyn Material> = Arc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
-  let right: Arc<dyn Material> = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
+  let left: Arc<dyn Material> = Arc::new(Dielectric::new(1.5));
+  let center: Arc<dyn Material> = Arc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
+  let right: Arc<dyn Material> = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
   let world = Box::new(vec![
     Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, Arc::clone(&ground)),
     Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, Arc::clone(&center)),
     Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, Arc::clone(&left)),
+    Sphere::new(Point3::new(-1.0, 0.0, -1.0), -0.4, Arc::clone(&left)),
     Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, Arc::clone(&right)),
   ]);
 

@@ -15,10 +15,6 @@ pub trait Mathematical:
 
 impl Mathematical for f64 {}
 
-pub fn square<T: Mathematical>(value: T) -> T {
-  value * value
-}
-
 /// A range [start, end].
 #[derive(Clone, Copy)]
 pub struct Range<T> {

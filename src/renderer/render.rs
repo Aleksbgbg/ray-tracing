@@ -22,8 +22,8 @@ pub fn render_pixel(params: &RenderParams, scene: &Scene, pixel: Vec2<usize>) ->
   let mut pixel_color = Color::default();
 
   for _ in 0..params.samples_per_pixel {
-    let u = (pixel.x() as f64 + random::random()) / params.last_pixel.x() as f64;
-    let v = (pixel.y() as f64 + random::random()) / params.last_pixel.y() as f64;
+    let u = (pixel.x() as f64 + random::random(0.0..1.0)) / params.last_pixel.x() as f64;
+    let v = (pixel.y() as f64 + random::random(0.0..1.0)) / params.last_pixel.y() as f64;
 
     let ray = scene.camera.get_ray((u, v));
 
@@ -38,7 +38,7 @@ fn ray_color(ray: &Ray, world: &dyn Hittable, bounce_depth: usize) -> Color {
     Color::default()
   } else if let Some(hit) = world.hit(ray, Range::new(0.001, f64::INFINITY)) {
     if let Some(scatter) = hit.material().scatter(ray, &hit) {
-      scatter.attenuation * ray_color(&scatter.ray, world, bounce_depth - 1)
+      scatter.attenuation() * ray_color(scatter.ray(), world, bounce_depth - 1)
     } else {
       Color::default()
     }

@@ -2,7 +2,8 @@ use crate::renderer::core::random;
 use crate::renderer::core::vec3::Vec3;
 
 pub fn random_point_in_unit_sphere(default: &Vec3) -> Vec3 {
-  *(random::random().cbrt() * Vec3::random().non_zero_or(default).unit()).non_zero_or(default)
+  *(random::random(0.0..1.0).cbrt() * Vec3::random(-1.0..=1.0).non_zero_or(default).unit())
+    .non_zero_or(default)
 }
 
 fn random_point_in_normal_hemisphere(normal: &Vec3) -> Vec3 {

@@ -16,12 +16,12 @@ impl Lambertian {
 
 impl Material for Lambertian {
   fn scatter(&self, _ray: &Ray, hit: &Hit) -> Option<Scatter> {
-    Some(Scatter {
-      ray: Ray::new(
+    Some(Scatter::new(
+      Ray::new(
         hit.point(),
         diffuse::bounce_direction(&hit.normal(), DiffuseMethod::TrueLambertian),
       ),
-      attenuation: self.albedo,
-    })
+      self.albedo,
+    ))
   }
 }

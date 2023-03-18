@@ -4,6 +4,7 @@ use crate::renderer::core::vec3::{Point3, Vec3};
 use crate::renderer::materials::material::Material;
 use std::sync::Arc;
 
+#[derive(Clone, Copy)]
 pub enum Face {
   Front,
   Back,
@@ -44,16 +45,16 @@ impl Hit {
     }
   }
 
-  pub fn time(&self) -> f64 {
-    self.time
-  }
-
   pub fn point(&self) -> Point3 {
     self.point
   }
 
   pub fn normal(&self) -> Vec3 {
     self.normal
+  }
+
+  pub fn face(&self) -> Face {
+    self.face
   }
 
   pub fn material(&self) -> &dyn Material {

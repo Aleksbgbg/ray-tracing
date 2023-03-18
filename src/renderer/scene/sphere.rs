@@ -1,4 +1,4 @@
-use crate::renderer::core::math::{self, Mathematical, Range};
+use crate::renderer::core::math::{Mathematical, Range};
 use crate::renderer::core::quadratic::Quadratic;
 use crate::renderer::core::ray::Ray;
 use crate::renderer::core::vec3::Vec3;
@@ -40,7 +40,7 @@ impl Hittable for Sphere {
     Quadratic::new(
       ray.direction().length_squared(),
       2.0 * Vec3::dot(&ray.direction(), &ray_to_sphere),
-      ray_to_sphere.length_squared() - math::square(self.radius()),
+      ray_to_sphere.length_squared() - self.radius().powi(2),
     )
     .find_real_roots()
     .iter()

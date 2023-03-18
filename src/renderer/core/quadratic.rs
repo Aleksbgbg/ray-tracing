@@ -1,4 +1,3 @@
-use crate::renderer::core::math;
 use std::cmp::Ordering;
 
 pub struct Quadratic {
@@ -25,7 +24,7 @@ impl Quadratic {
   }
 
   fn discriminant(&self) -> f64 {
-    math::square(self.b) - (4.0 * self.a * self.c)
+    self.b.powi(2) - (4.0 * self.a * self.c)
   }
 
   fn roots_type(&self) -> Roots {

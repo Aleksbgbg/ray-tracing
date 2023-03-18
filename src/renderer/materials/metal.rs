@@ -27,10 +27,7 @@ impl Material for Metal {
     );
 
     if Vec3::dot(&scattered_ray.direction(), &hit.normal()) > 0.0 {
-      Some(Scatter {
-        ray: scattered_ray,
-        attenuation: self.albedo,
-      })
+      Some(Scatter::new(scattered_ray, self.albedo))
     } else {
       None
     }
