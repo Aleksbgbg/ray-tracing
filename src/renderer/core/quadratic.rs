@@ -8,9 +8,9 @@ pub struct Quadratic {
 
 #[derive(PartialEq)]
 enum Roots {
+  TwoComplex,
   OneReal,
   TwoReal,
-  TwoComplex,
 }
 
 enum DisriminantRoot {
@@ -46,12 +46,12 @@ impl Quadratic {
 
   pub fn find_real_roots(&self) -> Vec<f64> {
     match self.roots_type() {
+      Roots::TwoComplex => vec![],
       Roots::OneReal => vec![self.find_root(DisriminantRoot::Positive)],
       Roots::TwoReal => vec![
         self.find_root(DisriminantRoot::Negative),
         self.find_root(DisriminantRoot::Positive),
       ],
-      Roots::TwoComplex => vec![],
     }
   }
 }

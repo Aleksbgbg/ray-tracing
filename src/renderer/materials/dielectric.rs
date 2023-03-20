@@ -12,7 +12,7 @@ fn reflectance(cos_theta: f64, refraction_ratio: f64) -> f64 {
 
 fn refract(ray_in: Vec3, normal_in: Vec3, cos_theta: f64, refraction_ratio: f64) -> Vec3 {
   let perpendicular = refraction_ratio * (ray_in + (normal_in * cos_theta));
-  let parallel = normal_in * -(1.0 - perpendicular.length_squared()).abs().sqrt();
+  let parallel = normal_in * -((1.0 - perpendicular.length_squared()).abs().sqrt());
 
   perpendicular + parallel
 }
@@ -39,7 +39,7 @@ impl Material for Dielectric {
 
       refractive_index_in / refractive_index_out
     };
-    let cos_theta = Vec3::dot(&-unit_direction, &normal).min(1.0);
+    let cos_theta = (-unit_direction).dot(&normal).min(1.0);
     let sin_theta = (1.0 - cos_theta.powi(2)).sqrt();
 
     let can_refract = (refraction_ratio * sin_theta) <= 1.0;

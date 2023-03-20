@@ -27,7 +27,7 @@ impl Hit {
   ) -> Self {
     let point = ray.at(time);
     let outward_normal = normal_calc(point).unit();
-    let face = if Vec3::dot(&ray.direction(), &outward_normal) < 0.0 {
+    let face = if ray.direction().dot(&outward_normal) < 0.0 {
       Face::Front
     } else {
       Face::Back
@@ -73,7 +73,7 @@ impl<T: Hittable> Hittable for Vec<T> {
       .map(|value| value.hit(ray, hittable_range))
       .filter(|value| value.is_some())
       .flatten()
-      .collect::<Vec<Hit>>();
+      .collect::<Vec<_>>();
     vec.sort_unstable_by(|a, b| b.time.total_cmp(&a.time));
 
     vec.pop()

@@ -36,13 +36,13 @@ impl Hittable for Sphere {
 
     Quadratic::new(
       ray.direction().length_squared(),
-      2.0 * Vec3::dot(&ray.direction(), &ray_to_sphere),
+      2.0 * ray.direction().dot(&ray_to_sphere),
       ray_to_sphere.length_squared() - self.radius().powi(2),
     )
     .find_real_roots()
-    .iter()
+    .into_iter()
     .find(|root| root.is_within(hittable_range))
-    .map(|&root| {
+    .map(|root| {
       Hit::new(root, ray, Arc::clone(&self.material), |point| {
         point - self.center()
       })

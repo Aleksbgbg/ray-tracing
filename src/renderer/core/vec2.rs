@@ -1,4 +1,4 @@
-#[derive(Clone, Copy)]
+#[derive(Default, Clone, Copy)]
 pub struct Vec2<T> {
   x: T,
   y: T,

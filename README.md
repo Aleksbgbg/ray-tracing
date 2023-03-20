@@ -12,6 +12,10 @@ For reasonable performance:
 
 `cargo run --release > image.ppm`
 
+To debug refraction, pass the `-debug` flag to the ray tracer:
+
+`cargo run --release -- -debug > image.ppm`
+
 ## Benchmarks
 
 System:

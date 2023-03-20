@@ -18,7 +18,7 @@ use crate::renderer::scene::sphere::Sphere;
 use crate::types::result::Result;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{mpsc, Arc};
-use std::thread;
+use std::{env, thread};
 
 const MAX_BOUNCES: usize = 50;
 const SAMPLES_PER_PIXEL: usize = 100;
@@ -67,7 +67,7 @@ fn render_thread(
   Ok(())
 }
 
-fn spawn_render_threads(scene: Arc<Scene>) -> Receiver<RenderMessage> {
+fn spawn_render_threads(params: RenderParams, scene: Arc<Scene>) -> Receiver<RenderMessage> {
   let (sender, receiver) = mpsc::channel();
 
   let threads = {
@@ -92,6 +92,7 @@ fn spawn_render_threads(scene: Arc<Scene>) -> Receiver<RenderMessage> {
       last_pixel: Vec2::new(LAST_PIXEL_X, LAST_PIXEL_Y),
       samples_per_pixel: SAMPLES_PER_PIXEL,
       max_bounces: MAX_BOUNCES,
+      ..params
     };
     let scene = Arc::clone(&scene);
 
@@ -104,23 +105,39 @@ fn spawn_render_threads(scene: Arc<Scene>) -> Receiver<RenderMessage> {
 }
 
 fn main() -> Result<()> {
+  let debug = env::args().any(|val| val == "-debug");
+
   let ground: Arc<dyn Material> = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
   let left: Arc<dyn Material> = Arc::new(Dielectric::new(1.5));
   let center: Arc<dyn Material> = Arc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
   let right: Arc<dyn Material> = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
-  let world = Box::new(vec![
-    Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, Arc::clone(&ground)),
-    Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, Arc::clone(&center)),
-    Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, Arc::clone(&left)),
-    Sphere::new(Point3::new(-1.0, 0.0, -1.0), -0.4, Arc::clone(&left)),
-    Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, Arc::clone(&right)),
-  ]);
+  let world = Box::new(if debug {
+    vec![Sphere::new(
+      Point3::new(0.0, 0.0, -1.0),
+      0.5,
+      Arc::clone(&left),
+    )]
+  } else {
+    vec![
+      Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, Arc::clone(&ground)),
+      Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, Arc::clone(&center)),
+      Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, Arc::clone(&left)),
+      Sphere::new(Point3::new(-1.0, 0.0, -1.0), -0.4, Arc::clone(&left)),
+      Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, Arc::clone(&right)),
+    ]
+  });
 
   let camera = Camera::new(ASPECT_RATIO);
 
   let mut image = vec![Vec3::default(); IMAGE_PIXELS];
 
-  let receiver = spawn_render_threads(Arc::new(Scene { camera, world }));
+  let receiver = spawn_render_threads(
+    RenderParams {
+      debug,
+      ..RenderParams::default()
+    },
+    Arc::new(Scene { camera, world }),
+  );
 
   let mut scanlines_remaining = IMAGE_HEIGHT;
   for _ in 0..IMAGE_PIXELS {

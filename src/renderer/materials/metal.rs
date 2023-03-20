@@ -1,6 +1,6 @@
-use crate::renderer::core::diffuse::random_point_in_unit_sphere;
+use crate::renderer::core::diffuse;
 use crate::renderer::core::ray::Ray;
-use crate::renderer::core::vec3::{Color, Vec3};
+use crate::renderer::core::vec3::Color;
 use crate::renderer::materials::material::{Material, Scatter};
 use crate::renderer::scene::hittable::Hit;
 
@@ -23,10 +23,10 @@ impl Material for Metal {
     let reflected_ray = ray.direction().unit().reflect(&hit.normal());
     let scattered_ray = Ray::new(
       hit.point(),
-      reflected_ray + (self.fuzziness * random_point_in_unit_sphere(&Vec3::default())),
+      reflected_ray + (self.fuzziness * diffuse::random_point_in_unit_sphere()),
     );
 
-    if Vec3::dot(&scattered_ray.direction(), &hit.normal()) > 0.0 {
+    if scattered_ray.direction().dot(&hit.normal()) > 0.0 {
       Some(Scatter::new(scattered_ray, self.albedo))
     } else {
       None
